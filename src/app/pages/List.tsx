@@ -1,14 +1,18 @@
+import { ArrowLeftIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import MyButton from "../components/Button";
 import type { List } from "../models/List";
 import { fetchListBySlug } from "../services/listService";
-import { ArrowLeftIcon } from "@heroicons/react/24/solid";
+import supabase from "../utils/supabase";
 
 export const ListPage: React.FC = () => {
     const navigate = useNavigate();
     const { slug } = useParams();
 
     const [list, setList] = useState<List>();
+
+    const [newListItem, setNewListItem] = useState<string>('');
 
     const getList = async () => {
         if (slug) {
@@ -20,6 +24,24 @@ export const ListPage: React.FC = () => {
     useEffect((() => {
         getList();
     }), [slug])
+
+    const updateListItems = async (newItem: string) => {
+        if (!list) return;
+
+        const updatedList = {
+            ...list,
+            items: [...list.items, newItem]
+        }
+
+        setList(updatedList);
+        setNewListItem('');
+
+        try {
+            await supabase.from('lists').update({ items: updatedList.items }).eq('id', list.id);
+        } catch (error) {
+            console.error(error)
+        }
+    }
 
     return (
         <div className="p-2">
@@ -38,6 +60,19 @@ export const ListPage: React.FC = () => {
                                 )
                             })}
                         </ol>
+
+                        <input
+                            value={newListItem}
+                            type="text"
+                            placeholder="Novo item"
+                            onChange={(e) => setNewListItem(e.target.value)}
+                            required
+                            className="border rounded-lg p-2 w-full"
+                        />
+
+                        <MyButton label={'Adicionar Item'} onClick={() => {
+                            updateListItems(newListItem)
+                        }} />
 
                         <p className="italic text-sm text-gray-500">Criada em: {new Date(list.created_at).toLocaleString()}</p>
                     </div>

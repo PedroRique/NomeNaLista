@@ -13,11 +13,11 @@ export const NewListPage: React.FC<NewListPageParams> = ({ list = { title: '', d
     const navigate = useNavigate();
     const [newList, setNewList] = useState<NewListForm>(list);
 
-    const handleCreateList = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const handleCreateList = async () => {
         try {
             const finalList = { ...newList, slug: slugify(newList.title) };
             await supabase.from('lists').insert(finalList);
+            navigate(-1);
         } catch (error) {
             console.error(error);
         }
@@ -44,7 +44,7 @@ export const NewListPage: React.FC<NewListPageParams> = ({ list = { title: '', d
         <div className="new-list-container p-2">
             <h1 className="text-2xl font-bold mb-2 flex items-center"><ArrowLeftIcon className="size-6 mr-2" onClick={() => navigate(-1)} /> Nova Lista</h1>
 
-            <form onSubmit={handleCreateList} className="flex flex-col gap-2 items-start">
+            <form className="flex flex-col gap-2 items-start">
                 <input
                     value={newList.title}
                     type="text"
