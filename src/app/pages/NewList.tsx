@@ -3,14 +3,11 @@ import React, { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router";
 import slugify from "slugify";
 import MyButton from "../components/Button";
-import supabase from "../utils/supabase";
 import { NewListItem } from '../components/NewListItem';
+import type { NewListForm } from '../models/List';
+import supabase from "../utils/supabase";
 
-
-type NewListForm = { title: string, description: string, items: string[], slug: string };
-
-type NewListPageParams = { list: NewListForm };
-
+type NewListPageParams = { list?: NewListForm };
 
 export const NewListPage: React.FC<NewListPageParams> = ({ list = { title: '', description: '', items: [''], slug: '' } }) => {
     const navigate = useNavigate();

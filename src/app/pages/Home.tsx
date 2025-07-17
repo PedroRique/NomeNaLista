@@ -5,7 +5,7 @@ import { ListCard } from '../components/ListCard';
 import type { List } from '../models/List';
 import supabase from '../utils/supabase';
 
-export const HomePage = () => {
+export const HomePage: React.FC = () => {
     const navigate = useNavigate();
 
     const [lists, setLists] = useState<List[]>([]);

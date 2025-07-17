@@ -3,9 +3,8 @@ export type List = {
     title: string;
     created_at: string;
     description: string;
-    items: ListItem[];
+    items: string[];
+    slug: string;
 }
 
-export type ListItem = {
-    name: string;
-}
+export type NewListForm = Omit<List, 'id' | 'created_at'>;
