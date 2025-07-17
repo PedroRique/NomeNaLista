@@ -1,22 +1,46 @@
-import { useState, type FormEvent } from "react";
+import { ArrowLeftIcon } from '@heroicons/react/24/solid';
+import React, { useState, type FormEvent } from "react";
+import { useNavigate } from "react-router";
+import slugify from "slugify";
 import MyButton from "../components/Button";
 import supabase from "../utils/supabase";
-import { ArrowLeftIcon } from '@heroicons/react/24/solid';
-import { useNavigate } from "react-router";
+import { NewListItem } from '../components/NewListItem';
 
-type NewListForm = { title: string, description: string, items: string[] };
 
-export const NewListPage = () => {
+type NewListForm = { title: string, description: string, items: string[], slug: string };
+
+type NewListPageParams = { list: NewListForm };
+
+
+export const NewListPage: React.FC<NewListPageParams> = ({ list = { title: '', description: '', items: [''], slug: '' } }) => {
     const navigate = useNavigate();
-    const [newList, setNewList] = useState<NewListForm>({ title: '', description: '', items: [] });
+    const [newList, setNewList] = useState<NewListForm>(list);
 
     const handleCreateList = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
-            await supabase.from('lists').insert(newList);
+            const finalList = { ...newList, slug: slugify(newList.title) };
+            await supabase.from('lists').insert(finalList);
         } catch (error) {
             console.error(error);
         }
+    }
+
+    const handleAddItem = () => {
+        const updatedItems = [...newList.items];
+        updatedItems.push('');
+        setNewList({ ...newList, items: updatedItems })
+    }
+
+    const handleRemoveItem = (itemIndex: number) => {
+        const updatedItems = [...newList.items].filter((_, liIdx) => liIdx !== itemIndex);
+        setNewList({ ...newList, items: updatedItems })
+    }
+
+    const handleUpdateItem = (e: React.ChangeEvent<HTMLInputElement>, itemIndex: number) => {
+        const updatedItems = [...newList.items];
+        updatedItems[itemIndex] = e.target.value;
+        setNewList({ ...newList, items: updatedItems })
     }
 
     return (
@@ -45,32 +69,18 @@ export const NewListPage = () => {
 
                 <ol className="flex flex-col gap-2 w-full">
                     {
-                        newList.items.map((item, i) => {
-                            return (
-                                <li key={i} className="flex items-center gap-2">
-                                    <span>{i + 1}.</span>
-                                    <input
-                                        className="border rounded-lg p-2 w-full"
-                                        value={item}
-                                        onChange={(e) => {
-                                            const updatedItems = [...newList.items];
-                                            updatedItems[i] = e.target.value;
-                                            setNewList({ ...newList, items: updatedItems })
-                                        }}
-                                    />
-                                </li>
-                            )
-                        })
+                        newList.items.map((item, i) =>
+                            <NewListItem
+                                key={i}
+                                itemIndex={i}
+                                itemValue={item}
+                                handleRemoveItem={handleRemoveItem}
+                                handleUpdateItem={handleUpdateItem}
+                            />)
                     }
                 </ol>
 
-
-                <MyButton label={'Adicionar item'} onClick={() => {
-                    const updatedItems = [...newList.items];
-                    updatedItems.push('');
-                    setNewList({ ...newList, items: updatedItems })
-                }} />
-
+                <MyButton label={'Adicionar item'} onClick={handleAddItem} />
 
                 <MyButton label={'Criar lista'} onClick={handleCreateList} />
             </form>
